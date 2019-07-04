@@ -1,0 +1,159 @@
+#include <conio.h>
+#include <iostream>
+#include <vector>
+#include <string>
+using namespace std;
+
+
+class CAlumno
+{
+protected:
+	string nombre;
+	string codigo;
+public:
+	CAlumno(string pnombre, string pcodigo)
+	{
+		nombre = pnombre;
+		codigo = pcodigo;
+	}
+	~CAlumno() {
+		 nombre="";
+		 codigo="";
+	}
+	void Print()
+	{
+		cout << "Nombre: " << nombre << endl << "Codigo: " << codigo << endl;
+	}
+	template <class U> friend class CHTable;
+};
+
+template <class T>
+class CNodo
+{
+protected:
+	CNodo<T>*next;
+	T value;
+public:
+	CNodo(T pvalue)
+	{
+		next = NULL;
+		value = pvalue;
+	}
+	~CNodo()
+	{
+		next = NULL;
+		value = NULL;
+	}
+	void PrintN()
+	{
+		value->Print();
+	}
+	template <class U> friend class CHTable;
+};
+
+template <class T>
+class CHTable
+{
+protected:
+	CNodo<T>**table;
+	int bsize;
+	int taken;
+public:
+	CHTable(int pbsize)
+	{
+		bsize = pbsize;
+		taken = 0;
+		table = new CNodo<T>*[bsize];
+		for (int i = 0; i < pbsize; i++)
+		{
+			table[i] = NULL;
+		}
+	}
+	~CHTable()
+	{
+		bsize = 0;
+		taken = 0;
+		for (int i = 0; i < bsize; i++)
+		{
+			delete table[i];
+		}
+		delete[] table;
+	}
+	int CreateKey(string pstring)
+	{
+		int suma = 0;
+		for (int i = 0; i < pstring.size(); i++)
+		{
+			suma += pstring.at(i);
+		}
+		return suma%bsize;
+	}
+	void Chain(T value)
+	{
+		int key = CreateKey(value->nombre);
+		CNodo<T>*aux = new CNodo<T>(value);
+		CNodo<T>*aux2 = table[key];
+		table[key] = aux;
+		aux->next = aux2;
+		aux = NULL;
+		aux2 = NULL;
+	}
+	void Insert(T value)
+	{
+		CNodo<T>*aux = new CNodo<T>(value);
+		int key = CreateKey(value->nombre);
+		if (table[key] != NULL)
+		{
+			Chain(value);
+		}
+		else
+		{
+			table[key] = aux;
+		}
+		aux = NULL;
+		taken++;
+	}
+	T getvalue(string pnombre)
+	{
+		int key = CreateKey(pnombre);
+		if (table[key] != NULL)
+		{
+			CNodo<T>*aux = table[key];
+			while (aux->value->nombre != pnombre)
+			{
+				if (aux->next != NULL)
+				{
+					aux = aux->next;
+				}
+				else
+				{
+					T out = new CAlumno("vacio", "vacio");
+					return out;
+				}
+			}
+			return aux->value;
+		}
+	}
+
+};
+
+
+int main()
+{
+	CHTable<CAlumno*>table(8);
+	table.Insert(new CAlumno("Julio", "20181b262"));
+	table.Insert(new CAlumno("uJlio", "20191b262"));
+	table.Insert(new CAlumno("uJloi", "20171b262"));
+	table.Insert(new CAlumno("Marius", "2013a313"));
+	table.Insert(new CAlumno("aMrius", "2013a313"));
+	table.Insert(new CAlumno("Miarus", "2013a313"));
+	table.Insert(new CAlumno("Juloi", "20161b262"));
+	table.Insert(new CAlumno("Juiol", "20151b262"));
+	table.Insert(new CAlumno("Jliuo", "20141b262"));
+	table.Insert(new CAlumno("oJuli", "20131b262"));
+	table.getvalue("Jliuo")->Print();
+	table.getvalue("Marius")->Print();
+
+	_getch();
+	return 0;
+}
