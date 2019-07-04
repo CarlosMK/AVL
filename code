@@ -201,13 +201,13 @@ private:
 			nodo->height = 1 + ((hi > hd) ? hi : hd);
 		}
 	}
-	void _rotarDer(Nodo<T>& x, Nodo<T> y, Nodo<T>*& p)
+	void _rotarDer(Nodo<T>*& x, Nodo<T>* y, Nodo<T>*& p)
 	{
 		p = x;
 		y->izquierda = x->derecha;
 		p->derecha = y;
 	}
-	void _rotarIzq(Nodo<T>x, Nodo<T>& y, Nodo<T>*& p)
+	void _rotarIzq(Nodo<T>*x, Nodo<T>*& y, Nodo<T>*& p)
 	{
 		p = y;
 		x->derecha = y->izquierda;
