@@ -1,0 +1,278 @@
+//CLASE ARBOL 
+#pragma once
+#include "Nodo.h"
+template<class T>
+class ArbolAvl
+{
+public:
+	ArbolAvl()
+	{
+		raiz = nullptr;
+	}
+
+	void insertar(T e)
+	{
+		_insertar(raiz, e);
+	}
+	void Eliminar(T e)
+	{
+		
+		 _Eliminar(raiz, e,raiz);
+	}
+	void inOrden()
+	{
+	
+		_inOrden(raiz);
+	}
+	void _deletenodo(T e)
+	{
+		deleteNode(raiz, e);
+	}
+
+private:
+	Nodo<T>* raiz;
+	int direccion;
+
+	void imprimir(Nodo<T>* nodo)
+	{
+		cout << " " << nodo->key << "(" << nodo->height << ")"<<  endl;
+	}
+	void _inOrden(Nodo<T>*& nodo)
+	{
+		if (nodo == nullptr) return;
+		_inOrden(nodo->izquierda);
+		imprimir(nodo);
+		_inOrden(nodo->derecha);
+
+	}
+	
+	void _insertar(Nodo<T>*& nodo, T e)
+	{
+		if (nodo == nullptr)
+		{
+			nodo = new Nodo<T>(e);
+			nodo->key = e;
+		}
+		else if (e > nodo->key)
+		{
+			_insertar(nodo->derecha, e);
+		}
+		else if (e < nodo->key)
+		{
+			_insertar(nodo->izquierda, e);
+		}
+		balancear(nodo);
+	}
+	int _altura(Nodo<T>* nodo) {
+		if (nodo == nullptr)
+			return -1;
+		else
+			return nodo->height;
+	}
+	void deleteNode(Nodo<T>* &nodo, T e) {
+		if (nodo == NULL)
+			return;
+		else if (e > nodo->key)
+		{
+			deleteNode(nodo->derecha,e);
+		}
+		else if (e < nodo->key)
+		{
+			deleteNode(nodo->izquierda,e);
+		}
+		else
+		{
+			if (nodo->derecha == NULL || nodo->izquierda == NULL)
+			{
+				Nodo<T>*aux = nodo->izquierda ? nodo->izquierda : nodo->derecha;
+				if (aux == NULL)
+				{
+					aux = nodo;
+					nodo = NULL;
+				}
+				else
+					*nodo = *aux;
+				free(aux);
+			}
+			else
+			{
+				Nodo<T>* aux = MinimoNodo(nodo->derecha);
+				nodo->key = aux->key;
+				deleteNode(nodo->derecha, aux->key);
+			}
+		}
+		if (nodo == NULL)
+			return;
+		balancear(nodo);
+		return;
+	}
+
+	Nodo<T>* MinimoNodo(Nodo<T>*aux)
+	{
+		if (aux->izquierda != NULL)
+			return MinimoNodo(aux->izquierda);
+		else
+		{
+			return aux;
+		}
+	}
+
+	/*if (nodo == NULL)
+		return;
+
+	else if (e < nodo->key)
+	{
+		deleteNode(nodo->izquierda, e);
+	}
+
+	else if (e>nodo->key)
+	{
+		deleteNode(nodo->derecha, e);
+	}
+
+	else {
+		if ((nodo->izquierda == NULL) || (nodo->derecha == NULL))
+		{
+			Nodo<T>* aux = nodo->izquierda ? nodo->izquierda : nodo->derecha;
+			if (aux == NULL) {
+				aux = nodo;
+				nodo = NULL;
+			}
+			else
+				*nodo = *aux;
+			free(aux);
+		}
+		else {
+			Nodo<T>* aux = minimovalor(nodo->derecha);
+			nodo->key = aux->key;
+			deleteNode(nodo->derecha, aux->key);
+		}
+	}
+	if (nodo == NULL)
+		return;
+	balancear(nodo);
+	return;
+}*/
+//Nodo<T>*minimovalor(Nodo<T>*aux)
+//{
+//	if (aux->izquierda != NULL)
+//	{
+//		return minimovalor(aux->izquierda);
+//	}
+//	else
+//	{
+//		return aux;
+//	}
+//}
+	void balancear(Nodo<T>*& nodo)
+	{
+		int hi = _altura(nodo->izquierda);
+		int hd = _altura(nodo->derecha);
+		nodo->height = 1 + ((hi > hd) ? hi : hd);
+		int d = hd - hi;
+		if (d > 1) // pesado derecha
+		{
+			int hnd = _altura(nodo->derecha->derecha);
+			int hni = _altura(nodo->derecha->izquierda);
+			if (hni > hnd)
+			{
+				_rotarDer(nodo->derecha->izquierda, nodo->derecha, nodo->derecha);
+			}
+			_rotarIzq(nodo, nodo->derecha, nodo);
+			balancear(nodo->izquierda);
+			balancear(nodo->derecha);
+			hi = _altura(nodo->izquierda);
+			hd = _altura(nodo->derecha);
+			nodo->height = 1 + ((hi > hd) ? hi : hd);
+		}
+		else if (d < -1)
+		{
+			int hnd = _altura(nodo->izquierda->derecha);
+			int hni = _altura(nodo->izquierda->izquierda);
+			if (hnd>hni)// pesado a la izquierda
+			{
+				_rotarIzq(nodo->izquierda, nodo->izquierda->derecha, nodo->izquierda);
+			}
+			_rotarDer(nodo->izquierda, nodo, nodo);
+			balancear(nodo->izquierda);
+			balancear(nodo->derecha);
+			hi = _altura(nodo->izquierda);
+			hd = _altura(nodo->derecha);
+			nodo->height = 1 + ((hi > hd) ? hi : hd);
+		}
+	}
+	void _rotarDer(Nodo<T>& x, Nodo<T> y, Nodo<T>*& p)
+	{
+		p = x;
+		y->izquierda = x->derecha;
+		p->derecha = y;
+	}
+	void _rotarIzq(Nodo<T>x, Nodo<T>& y, Nodo<T>*& p)
+	{
+		p = y;
+		x->derecha = y->izquierda;
+		p->izquierda = x;
+	}
+};
+//--------------------------------------------------------------------------------------------
+//CLASE NODO
+#pragma once
+#include <iostream>
+#include "conio.h"
+#include "ArbolAvl.h"
+
+using namespace std;
+using namespace System;
+template<class T>
+class Nodo
+{
+public:
+	Nodo(T key)
+	{
+		izquierda = nullptr;
+		derecha = nullptr;
+		this->key = key;
+		height = 0;
+	}
+	~Nodo()
+	{
+		izquierda = nullptr;
+		derecha = nullptr;
+		key = NULL;
+	}
+private:
+	int height;
+	T key;
+	Nodo* izquierda;
+	Nodo* derecha;
+	template<class U> friend class ArbolAvl;
+};
+//MAIN
+#include <iostream>
+#include "conio.h"
+#include "ArbolAvl.h"
+
+using namespace std;
+using namespace System;
+
+
+
+
+int main()
+{
+	ArbolAvl<int>* arbol = new ArbolAvl<int>();
+	arbol->insertar(50);
+	arbol->insertar(60);
+	arbol->insertar(40);
+	arbol->insertar(55);
+	arbol->insertar(70);
+
+	arbol->inOrden();
+	arbol->_deletenodo(60);
+
+	cout << "/////////////////" << endl;
+	arbol->inOrden();
+
+
+	system("pause");
+}
