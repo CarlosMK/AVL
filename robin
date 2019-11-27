@@ -1,0 +1,216 @@
+
+#include <iostream>
+#include <conio.h>
+#include <vector>
+using namespace System;
+using namespace std;
+
+class Procesos
+{
+private:
+	int numero;
+	int BurstTime;
+	int BurstTimeini;
+	int ArriveTime;
+	int waitTime;
+	int completeTime;
+	int TaT;
+public:
+	Procesos(int _numero, int _bursttime, int _arrivetime)
+	{
+		numero = _numero;
+		BurstTime = _bursttime;
+		BurstTimeini = _bursttime;
+		ArriveTime = _arrivetime;
+	}
+
+	int getNum()
+	{
+		return numero;
+	}
+	int getburstime()
+	{
+		return BurstTime;
+	}
+	int getBurstTimeIni()
+	{
+		return BurstTimeini;
+	}
+	int getarrivetime()
+	{
+		return ArriveTime;
+	}
+	int getwaittime()
+	{
+		return waitTime;
+	}
+	int getcompletetime()
+	{
+		return completeTime;
+	}
+	int getTat()
+	{
+		return TaT;
+	}
+	void setNum(int _numero)
+	{
+		numero = _numero;
+	}
+	void setBurstTime(int _bursttime)
+	{
+		BurstTime = _bursttime;
+	}
+	void setArriveTime(int _arrivetime)
+	{
+		ArriveTime = _arrivetime;
+	}
+	void setWaitTime(int _waittime)
+	{
+		waitTime = _waittime;
+	}
+	void setCompleteTime(int _completetime)
+	{
+		completeTime = _completetime;
+	}
+	void setTat(int _tat)
+	{
+		TaT = _tat;
+	}
+
+};
+
+int main() 
+{
+	vector<Procesos> Proceso;
+	 
+	int Nprocess; 
+	int TQ;
+	int BurstTime;
+	int ArriveTime;
+	int contadorprocesos = 1;
+	int contadortiempo = 0;
+	int totalTime = 0;
+	//////////////////////////////////////////////////////////////////////////
+	cout << "Ingrese el numero de procesos:" << endl;
+	cin >> Nprocess;
+	cout << "Ingrese el Time Quantun" << endl;
+	cin >> TQ;
+	cout << "///////////////////////////////   TIME QUANTUN = " << TQ << endl;
+	//////////////////////////////////////////////////////////////////////////
+	do
+	{
+		cout << "Proceso : " << contadorprocesos << endl;
+		cout << "Inserta el BurstTime" << endl;
+		cin >> BurstTime;
+		cout << "Inserta el ArriveTime" << endl;
+		cin >> ArriveTime;
+		Procesos * NewProcess;
+		NewProcess	= new Procesos(contadorprocesos, BurstTime, ArriveTime);
+		Proceso.push_back(*NewProcess);
+		contadorprocesos++;
+		Console::Clear();
+	} while (contadorprocesos <= Nprocess);
+	/////////////////////////////////////////////////////////////////////////
+	//Nprocess = 8;
+	//TQ = 4;
+	//Procesos * NewProcess1 = new Procesos(1, 16, 0);
+	//Procesos * NewProcess2 = new Procesos(2, 25, 0);
+	//Procesos * NewProcess3 = new Procesos(3, 34, 5);
+	//Procesos * NewProcess4 = new Procesos(4, 12, 6);
+	//Procesos * NewProcess5 = new Procesos(5, 22, 6);
+	//Procesos * NewProcess6 = new Procesos(6, 17, 19);
+	//Procesos * NewProcess7 = new Procesos(7, 9, 22);
+	//Procesos * NewProcess8 = new Procesos(8, 14, 29);
+
+	//Proceso.push_back(*NewProcess1);
+	//Proceso.push_back(*NewProcess2);
+	//Proceso.push_back(*NewProcess3);
+	//Proceso.push_back(*NewProcess4);
+	//Proceso.push_back(*NewProcess5);
+	//Proceso.push_back(*NewProcess6);
+	//Proceso.push_back(*NewProcess7);
+	//Proceso.push_back(*NewProcess8);
+
+	//////////////////////////////////////////////////////////////////////////
+	cout << "Procesos" << "   " << "BurstTime" << "   " << "ArriveTime" << endl;
+	
+	for (int i = 0; i < Proceso.size(); i++)
+	{
+		cout << "   P" << Proceso.at(i).getNum() 
+			 << "          " << Proceso.at(i).getburstime()
+			 << "          " << Proceso.at(i).getarrivetime() << endl;
+
+		totalTime = totalTime + Proceso.at(i).getburstime();
+	}
+	//////////////////////////////////////////////////////////////////////////
+	cout << "El tiempo total es: " << totalTime << endl << endl << endl;
+	//////////////////////////////////////////////////////////////////////////
+	cout << "Round 1" << endl;
+	int ronda = 1;
+	int contCambContex = 0;
+	for (int i = 0; i < Proceso.size(); i++)
+	{
+		if (Proceso.at(i).getarrivetime() <= contadortiempo && Proceso.at(i).getburstime() != 0)
+		{
+			if (Proceso.at(i).getBurstTimeIni() == Proceso.at(i).getburstime())
+			{
+				Proceso.at(i).setWaitTime(contadortiempo - Proceso.at(i).getarrivetime());
+			}
+			cout << "P" << Proceso.at(i).getNum() << "  ";
+			//--------------------------------------------
+
+			if (Proceso.at(i).getburstime() > TQ)
+			{
+				contadortiempo = contadortiempo + TQ;
+				Proceso.at(i).setBurstTime(Proceso.at(i).getburstime() - TQ);
+				cout << "BT: " << Proceso.at(i).getburstime();
+				contCambContex++;
+			}
+			else
+			{
+				contadortiempo = contadortiempo + Proceso.at(i).getburstime();
+				Proceso.at(i).setBurstTime(0);
+				cout << "BT: " << "T";
+				contCambContex++;
+				Proceso.at(i).setCompleteTime(contadortiempo - Proceso.at(i).getarrivetime());
+			}
+			//----------------------------------------------------------------
+			cout << "   " << contadortiempo << endl;
+			//---------------------------------------
+		}
+		if (i == Proceso.size() -1  && contadortiempo < totalTime )
+		{
+			ronda++;
+			cout << endl;
+			cout << "Round " << ronda << endl;
+			i = -1;
+		}
+	}
+	//-----------------------------------------------------------
+	cout << endl;
+	cout << contCambContex << " cambios de contexto" << endl;
+	cout << ronda << " rondas" << endl;
+	cout << endl;
+	//////////////////////////////////////////////////////////////////////////
+	float AWT = 0;
+	float ACT = 0;
+	cout << "Proceso    " << "WT    " << "CT    " << "TaT" << endl;
+	for (int i = 0; i < Proceso.size(); i++)
+	{
+		Proceso.at(i).setTat(Proceso.at(i).getcompletetime() - Proceso.at(i).getwaittime() - Proceso.at(i).getBurstTimeIni());
+		cout << "   " << Proceso.at(i).getNum() << "       " << Proceso.at(i).getwaittime() << "    " << Proceso.at(i).getcompletetime()
+			<< "    " << Proceso.at(i).getTat() << endl;
+		AWT = AWT + Proceso.at(i).getwaittime();
+		ACT = ACT + Proceso.at(i).getcompletetime();
+	}
+	AWT = AWT / Proceso.size();
+	ACT = ACT / Proceso.size();
+	cout << endl;
+	cout << "AWT: " << AWT << endl;
+	cout << "ACT: " << ACT << endl;
+
+	_getch();
+	return 0;
+}
+
+
