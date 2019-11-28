@@ -467,13 +467,7 @@ Select * from Employees
 
 Select * from Products
 
-
-(
-Cempleado int primary key,
-Nempleado varchar(255),
-Cdepartamento int 
-)
-Insert into Empleado values(1,'Sistema','1')
+ 
 
 
 
