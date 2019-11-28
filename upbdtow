@@ -1,0 +1,510 @@
+
+
+ /*2.La empresa tiene como política otorgar a los jefes una
+   comisión del 0.5% sobre la venta de sus subordinados. 
+    Calcule la comisión mensual que le ha correspondido a cada 
+	jefe por cada año (basándose en la fecha de la orden) 
+	según las ventas que figuran en la base de datos. 
+	Muestre el código del jefe, su apellido, el año y mes de cálculo,
+	 el monto acumulado  de venta de sus subordinados, y la 
+	 comisión obtenida. */
+
+	 select j.EmployeeID,j.LastName,
+			YEAR(o.OrderDate) 'Año',
+			MONTH (o.OrderDate) Mes,
+			Monto=SUM(od.Quantity*od.UnitPrice*(1-od.Discount)),
+			Comision=0.005*SUM(od.Quantity*od.UnitPrice*(1-od.Discount))
+	 from Employees e join Employees j on e.ReportsTo=j.EmployeeID
+		  join Orders o on o.EmployeeID=e.EmployeeID
+		  join [Order Details] od on o.OrderID=od.OrderID
+	group by j.EmployeeID,j.LastName,
+			YEAR(o.OrderDate),
+			MONTH (o.OrderDate)
+	order by 1 asc, 5 desc
+
+
+/*11.	Encontrar el producto de cada categoría que 
+tuvo la mayor venta (en unidades)
+ durante el año 2017, liste la categoría, 
+ el código de producto, nombre del producto, 
+ y la cantidad vendida.*/
+
+ create view vw_prod_categoria as
+ select p.ProductID,p.ProductName,c.CategoryID,c.CategoryName,
+		SUM(od.Quantity)'Q_Productos'
+ from Categories c join Products p on c.CategoryID=p.CategoryID
+					join [Order Details] od on od.ProductID=p.ProductID
+					join Orders o on od.OrderID=o.OrderID
+ where YEAR(o.OrderDate)=2017
+ group by p.ProductID,p.ProductName,c.CategoryID,c.CategoryName
+-- order by 3 asc, 5 desc
+
+ --75	Rhönbräu Klosterbier	1	Beverages	630
+ --65	Louisiana Fiery Hot Pepper Sauce	2	Condiments	490
+
+ create view vw_max_categoria as
+ select vw.CategoryID,MAX(vw.Q_Productos) 'Q_Maxi'
+ from vw_prod_categoria vw
+ group by vw.CategoryID
+
+ select * from vw_prod_categoria
+ select * from vw_max_categoria
+
+ select vw.ProductID,vw.ProductName,vw.CategoryID,vw.CategoryName,vw2.Q_Maxi
+ from vw_prod_categoria vw join vw_max_categoria vw2 on vw.CategoryID=vw2.CategoryID
+ where vw.Q_Productos=vw2.Q_Maxi
+
+
+
+   /*12.Encontrar el pedido de mayor importe por país al cual se despachó. 
+Mostrar el país, order ID y el monto del pedido, 
+ordenado por monto de mayor a menor.*/
+
+create view vw_orden_pais as
+select o.ShipCountry,o.OrderID,
+		Venta=SUM(od.Quantity*od.UnitPrice*(1-od.Discount))
+from Orders o join [Order Details] od on o.OrderID=od.OrderID
+group by o.ShipCountry,o.OrderID
+--order by 1 asc, 3 desc
+
+--Argentina	10986	2220
+--Austria	10514	8623.45001220703
+
+select vw.ShipCountry,vw.OrderID,convert(money,vw.Venta)
+from vw_orden_pais vw
+where vw.Venta=(select MAX(vw1.Venta)
+				from vw_orden_pais vw1
+				where vw1.ShipCountry=vw.ShipCountry)
+order by 1 asc
+
+
+/*PD 11*/
+
+/*Ejercicio 1*/
+
+--FUNCIONES:
+--- Escalares
+--- Tabulares
+
+create function fn_num_emp(/*parametros*/)
+returns int--tipo:escalar
+as
+begin
+	--1)declaración de variables: TODAS COMIENZAN CON ARROBA
+	declare @q_emp int
+	--2)query
+	select @q_emp=COUNT(e.EmployeeID)
+	from Employees e
+	--3)retorno de la variable
+	return @q_emp
+end
+go
+select dbo.fn_num_emp()
+
+/*Ejercicio 2*/
+
+--JEFE ID= 2
+
+create function fn_q_sub (@idJefe int)
+returns int
+as
+begin
+	--variables
+	declare @num_sub int
+	--query
+	select @num_sub=count(e.EmployeeID)
+	from Employees e
+	where e.ReportsTo=@idJefe
+	--retorno de la variable
+	return @num_sub
+end
+go
+select dbo.fn_q_sub(2) 'Q_Subordinados'
+
+/*Ejercicio 3*/
+
+-- Codigo Emp, Nombre del Empleado, Q Ordenes
+-- Nombre comience con A
+go
+create function fn_ordenes_xemp (@nombre nvarchar(10))
+returns table
+as
+return(
+	select e.EmployeeID,e.FirstName,COUNT(o.OrderID) 'Q_Ordenes'
+	from Employees e join Orders o on o.EmployeeID=e.EmployeeID
+	where e.FirstName like @nombre
+	group by e.EmployeeID,e.FirstName
+)
+go
+select *
+from dbo.fn_ordenes_xemp('%e%')
+
+/*Ejercicio 4*/
+/*4.	Crear una función que liste para un País (Customers)
+ (Parámetro de entrada), el Nombre de la compañía (Customers=, 
+ Ciudad (Customers), País, Nombre de Producto, Cantidad, 
+ Precio Unitario 
+ y Descuento de Producto*/
+
+ --Paises comiencen con A
+
+ create function fn_lista_ordenes(@pais nvarchar(15))
+ returns table
+ as
+ return(
+
+ select c.CompanyName,c.City,c.Country,p.ProductName,
+		od.Quantity,od.UnitPrice,od.Discount
+ from Customers c join Orders o on c.CustomerID=o.CustomerID
+					join [Order Details] od on od.OrderID=o.OrderID
+					join Products p on od.ProductID=p.ProductID
+ where c.Country like @pais
+ )
+
+ select *
+ from fn_lista_ordenes ('a%')
+
+ /*Ejercicio 5*/
+
+ select cos(0) -- deterministica
+ select getdate() --no deterministica
+
+ /*Ejercicio 6*/
+
+ --Procedure=Store procedure = Procedimiento = Procedimiento almacenado
+ 
+ create procedure sp_detalle_clientes as
+ 
+ select c.CompanyName,c.ContactName,c.City,c.Phone
+ from Customers c
+ go
+
+ exec dbo.sp_detalle_clientes
+
+/////////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+ /*Ejercicio 7*/
+ /*TRANSACCIONES
+ Son una porción de código encapsulada, atomica, indivisible.
+
+ UPDATE, INSERT o DELETE
+
+ COMMIT: confirma la transacción
+ ROLLBACK: vuelve todo al estado inicial
+
+ SQL: Trabaja Autocommit
+
+ */
+ --REVISO ESTADO INICIAL
+ select *
+ from Products
+ where CategoryID=2
+ --3	Aniseed Syrup	1	2	12 - 550 ml bottles	10.00
+--4	Chef Anton's Cajun Seasoning	2	2	48 - 6 oz jars	22.00
+ 
+ --EJECUTAR TRANSACCION
+
+ create procedure sp_upd_precio_prod @cat int, @por real
+ as
+ begin transaction --OJO: SOLO SE USA SI VAMOS A REALIZAR TRANSACCIONES
+	
+	update Products
+	set UnitPrice=UnitPrice+UnitPrice*@por/100
+	where CategoryID=@cat
+
+	if @@ERROR<>0
+		goto on_error
+	else
+		goto fin
+
+	on_error:
+		rollback transaction
+	fin:
+		commit
+
+exec dbo.sp_upd_precio_prod 2, 10
+ --REVISAR LOS CAMBIOS
+  select *
+ from Products
+ where CategoryID=2
+ --3	Aniseed Syrup	1	2	12 - 550 ml bottles	11.00
+--4	Chef Anton's Cajun Seasoning	2	2	48 - 6 oz jars	24.20
+
+--Ejercicio 9
+
+create table Eventos
+(fecha datetime,
+motivo varchar(255)
+)
+
+select * from Eventos
+
+insert into Eventos
+select getdate(),'Limite de stock del producto: '+
+				ltrim(rtrim(str(p.ProductID))) --ltrim/rtrim
+from Products p
+where p.UnitsInStock<=5
+
+--delete from Eventos
+
+create trigger tr_productos
+--1) DONDE SE DISPARA EL TIGGER
+on PRODUCTS--en que tabla
+for UPDATE	-- en que transaccion
+as
+begin
+--2) QUE DEBE HACER EL TRIGGER?
+
+	if UPDATE(UnitsInStock)
+	begin
+		insert into Eventos
+		select getdate(),'Limite de stock del producto: '+
+				ltrim(rtrim(str(p.ProductID))) --ltrim/rtrim
+		from inserted p-- Products p --inserted y deleted
+		where p.UnitsInStock<=5
+	end
+
+end
+
+/*Comprobar*/
+/*LO MISMO QUE DICE LA DECLARACION*/
+
+/*Estado inicial*/
+select *
+from Products
+--1	Chai	1	1	10 boxes x 20 bags	18.00	39
+select * from eventos
+
+/*Transaccion*/
+update Products
+set UnitsInStock=3
+where ProductID=1
+
+Update Products
+set ProductName='Chai'
+where ProductID=1
+
+/*Comprobar los cambios*/
+select *
+from Products
+--1	Chai	1	1	10 boxes x 20 bags	18.00	3
+select * from eventos
+
+/*Ejercicio 10*/
+
+/*DEPARTAMENTO
+CDepartamento int PK,
+NDepartamento varchar(255),
+NLocalidad varchar(255),
+QEmpleados int
+*/
+
+/* EMPLEADO
+CEmpleado int PK,
+NEmpleado varchar(255),
+CDepartamento int FK
+*/
+
+
+create table departamento 
+(cdepartamento int,
+ ndepartamento varchar(255),
+ nlocalidad varchar(255),
+ qempleados int,
+ constraint PK_departamento Primary Key (cdepartamento)
+ )
+  
+ create table empleados
+ (Cempleado int,
+  Nempleado varchar(255),
+  cdepartamento int,
+  constraint PK_Empleados Primary Key (cempleado),
+  constraint FK_Departamento Foreign Key (cdepartamento)
+			references Departamento (cdepartamento) 
+ )
+
+ select * from departamento
+ select * from empleados
+
+ insert into departamento
+ values (2,'Finanzas','Lima',0)
+
+ create trigger tr_insert_emp
+ on Empleados
+ for insert
+ as
+ begin
+	--2) que debe hacer
+	--Departamento +1
+	update Departamento
+	set Qempleados=Qempleados+1
+	from inserted e--Empleados
+	where Departamento.Cdepartamento=e.CDepartamento
+ end
+
+ create trigger tr_delete_emp
+ on Empleados
+ for delete
+ as
+ begin
+	--2) que debe hacer
+	--Departamento +1
+	update Departamento
+	set Qempleados=Qempleados-1
+	from deleted e--Empleados
+	where Departamento.Cdepartamento=e.CDepartamento
+ end
+
+ --PROBAR
+
+  select * from departamento
+ select * from empleados
+ 
+ insert into Empleados
+values (1,'Jacobo',1)
+
+delete from Empleados
+where Cempleado=1
+
+-------------------------------------------------
+
+
+*1.1.	Crear una tabla llamada ESTVTA a partir de los 
+clientes cuya venta anual supera los S/.40,000. Los atributos a 
+considerar son: ID cliente, nombre, año ,venta del año. 
+Verificar definición de la nueva tabla (sp_Help).*/
+
+
+Create table ESTVTA
+(
+id int,
+nombre nvarchar(40),
+Año int,
+VentaAnual money
+)
+insert into ESTVTA
+Select c.CustomerID,c.CompanyName,YEAR(o.OrderDate)'Año',SUM((od.UnitPrice*od.Quantity)*(1-od.discount))'Venta Total' from Customers c 
+join Orders o on c.CustomerID = o.CustomerID 
+join [Order Details] od on od.OrderID = O.OrderID
+group by c.CustomerID,c.CompanyName,YEAR(o.OrderDate)
+Having SUM((od.UnitPrice*od.Quantity)*(1-od.discount)) > 40000
+-- CAMBIAR TIPO DE DATO
+Alter TABLE Estvta alter COLUMN	id nchar(5)
+
+/*1.2.Adicionar una nueva columna a la tabla ESTVTA 
+llamada "QProductos" (de tipo INT). Verificar la nueva 
+estructura de Nueva_Tabla.(sp_help). Actualice el nuevo 
+atributo con la venta en unidades por cliente.*/
+Alter table Estvta
+add Qproductos int
+Select * from ESTVTA
+
+Update ESTVTA
+set Qproductos = (Select SUM(od.Quantity) from Customers c join Orders o on c.CustomerID = o.CustomerID join [Order Details] od on od.OrderID = o.OrderID
+where ESTVTA.id = C.CustomerID and ESTVTA.Año = YEAR(o.OrderDate))
+
+/*1.3Escriba un trigger que reste el monto de venta y la cantidad de 
+productos de la tabla ESTVTA cada vez que se elimine un registro
+de OrderDetails*/
+
+Create trigger tr_montoanual_cantidad
+on [Order Details]
+for delete
+as
+begin 
+	update ESTVTA
+	set ESTVTA.VentaAnual = ESTVTA.VentaAnual - (d.UnitPrice*d.Quantity)*(1-d.discount),ESTVTA.Qproductos= ESTVTA.Qproductos-d.Quantity from deleted d 
+	join Orders o on d.OrderID = o.OrderID join Customers c on c.CustomerID = o.CustomerID
+	where ESTVTA.id = c.CustomerID and ESTVTA.Año = YEAR(o.OrderDate)
+
+end
+
+Select * from [Order Details] od join Orders o on od.OrderID = o.OrderID join Customers c on c.CustomerID = o.CustomerID
+where C.CustomerID = 'ERNSH'and YEAR(o.OrderDate) = 2018
+
+Select * from ESTVTA
+Delete [Order Details]
+where OrderID = 10836 and ProductID = 35
+ --108 -- 6
+ --40118.6484 --1704
+Select * from ESTVTA
+
+
+/*Modificar la tabla Empleados y agregar el campo ImpVendido de tipo INT NOT NULL con valor
+ por defecto de 0.00 Crear un trigger en la tabla order details para que cada vez que se venda 
+ un producto se actualice el campo impVendido  de la tabla empleados con el el valor que tiene en 
+ ese momento más la cantidad vendida en el order details. */
+
+
+alter trigger tr_Importe
+on [Order Details]
+for insert
+as
+begin
+	update Employees
+	set Employees.Impvendido = Employees.Impvendido + (Select (d.UnitPrice*d.Quantity)*(1-d.Discount)from inserted d )
+	where EmployeeID = (Select e.EmployeeID from inserted od 
+						join Orders o on od.OrderID = o.OrderID 
+						join Employees e on e.EmployeeID = o.EmployeeID)
+
+end
+	insert into [Order Details] values (10248,14)
+
+	Select * from [Order Details]
+	select* from Employees
+
+
+ Alter table Employees
+ add Impvendido int not null default 0.00
+ Select (od.UnitPrice*od.Quantity)*(1-od.Discount)'Monto' from Employees e join Orders o on o.EmployeeID = e.EmployeeID 
+ join [Order Details] od on od.OrderID = o.OrderID
+Select * from Employees
+
+Select * from Products
+
+
+(
+Cempleado int primary key,
+Nempleado varchar(255),
+Cdepartamento int 
+)
+Insert into Empleado values(1,'Sistema','1')
+
+
+
+
+
+
+
+
+
+--------------------------------------------------------
+
+
+create view vw_emple_ord_año as
+select YEAR(o.OrderDate) 'Año', e.EmployeeID, e.FirstName, p.ProductID, p.ProductName,COUNT(o.OrderID) '#Ordenes'
+from Employees e join Orders o on e.EmployeeID = o.EmployeeID
+				 join [Order Details] od on o.OrderID = od.OrderID
+				 JOIN Products p on od.ProductID = p.ProductID
+group by YEAR(o.OrderDate), e.EmployeeID, e.FirstName, p.ProductID, p.ProductName
+
+create view vw_max_prod_ordenes as
+select vw.Año,vw.ProductID ,MAX(vw.#Ordenes) 'Maximo'
+from vw_emple_ord_año vw
+group by vw.Año,vw.ProductID
+
+create function fn_max_emple_xprodu_xaño (@año int)
+returns table
+as 
+return (
+	select vw1.Año, vw1.EmployeeID, vw1.FirstName, vw1.ProductID, vw1.ProductName, vw2.Maximo
+	from vw_emple_ord_año vw1 join vw_max_prod_ordenes vw2 on vw1.ProductID = vw2.ProductID and vw1.Año = vw2.Año
+	where vw1.#Ordenes = vw2.Maximo and vw1.Año = @año
+)
+
+select * from fn_max_emple_xprodu_xaño(2017)
