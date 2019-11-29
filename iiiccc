@@ -1,0 +1,87 @@
+1. Visibilidad de Estado del sistema
+Informar al usuario de que esta ocurriendo
+2. Relación entre el sistema y el mundo real
+Usar expresiones y palaabras que resulten familiares con el usuario
+La informacion debe aparecer un orden logico y natural
+3. Libertad y Control por parte del usuario
+Salida de emergencia de un estado
+4. Consistencia y estándares
+No debe haber acciones que signifiquen lo mismo
+5. Prevencion de errores
+ayudar al usuario que no caiga en un error
+6. Reconocer antes que recordar
+Hacer visibles acciones y opciones para
+no recordar informacion entre distintas secciones
+7. Flexibilidad y eficiencia en el uso
+Atajos con las teclas
+8.Diseño estetico y mimalista
+Las paginas no deben tener info inncesaria
+9. Ayudar a ls usuarios a reconocer diagnosticar y recuperarse
+de errores
+Mensajes de error bien redactados
+10. AYuda y documentacion
+poner boton de ayuda y guias tutorial visible
+
+
+
+Preparacion - ejecucion de pruebas - puntuar severidad - Revision de resultados
+
+
+red -> compradores impulsivos
+orange -> compradores impulsivos (agresion)
+yellow -> see first (post display)
+black ->expensive product (prestige , classic)
+green -> relax (prestige , rico, fertil
+blue -> prefered by men (productive , no invasive)
+purple -> used in moda , antienvejecimiento (for calm)
+white -> simplicity , clean , refinement
+
+
+
+usability heuristics
+
+
+effectivenes -- can users lograr sus objetivos en nuestro website 
+efficiency -- cuan rapido pueden los usuarios lograr sus objetivs
+learnable -- el sitio es facil de manejar la primera vez q lo usan
+memorability -- pueden los usuarios recordar como era tu sitio web 
+error handling -- como el sitio web ayuda a recuperarse de errores
+user satisfaction -- a los usuarios les gusta tu website y lo recomiendan a otros
+
+
+
+UX ES .--usable , util , ubicable , valiosa , desable, creible , accesible 
+
+accesible -- for person with disabilities  (la app debe ser inclusiva)
+
+		visual 
+		hearing 
+		motor 
+		cognitive 
+
+web accesability principles :
+
+perceiivable--previsible: presentar la app a los user de modo q lo puedan percibir de diferentes formas
+	
+operable : operable para personas con discapacidades 
+
+understable : el contenido debe ser entendible para los usuarios
+
+robust - contenido entendible por una amplia variedad de usuarios
+
+
+inclusive design principles:
+
+proporcionar experiencias comparables (app q permita su uso para varios tipos de users sin perder su calidad) : contenido alternativopero original, hacerlos personalizables , usar region de tipo aria live
+
+Considera la situación del usuario: contrasta colores, ayuda contextual , subttitulos en camino
+
+Consistente:  patrones de diseño coherentes para ref la compresib y familia, consistencia de lenguaje , arquitectura consistente
+
+Dejar al usuario mandar : Desplazamieno infinito  para mobil y con boton de apagado para teclado , parallax para algunos usuarios marea el scrolling  (para con controles) , permite zoom 
+
+Ofrece opciones : diversas maneras para hacer una accion (gesto , tactil , o tecla de atajo para lo mismo	) , maquetacion (preferir entre imagenes grandes  o contenidos pequeños, alternativas accesibles (diversas maneras de presentar la informacion ::no escondidos)
+
+Prioriza el contenido: Enfocar en la tarea actual(muestra lo relevante no de golpe todo), prioriza tareas escenciales a q se dedica tu app, usa lenguaje claro(sencillo con la info mas importante primero)
+
+Agrega valor : integracion con disp conectados (gente con dificultad en la interfaz (receptor de voz)) , integracion con funcionalidades de la pantalla (vibrar para notificaciones mas claras ), facilidad de tareas (permite ver contraseñas , permite huella digital)
